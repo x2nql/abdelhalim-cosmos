@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=none">
+    <title>على حسب وداد قلبي - النسخة الأسطورية المستقرة</title>
+    <!-- استيراد الخطوط -->
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital@1&family=Cairo:wght@300;400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-red: #dc143c;
+            --bg-deep: #010002;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-deep);
+            font-family: 'Cairo', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* لوحة الرسم الخلفية */
+        #ultimate-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* حاوية المشغل الزجاجية الفاخرة */
+        .master-container {
+            position: relative;
+            z-index: 10;
+            width: 90%;
+            max-width: 850px;
+            background: rgba(5, 0, 10, 0.35);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 40px;
+            padding: 45px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-around;
+            gap: 40px;
+            box-shadow: 0 40px 120px rgba(0, 0, 0, 0.9);
+            transform: translateY(20px);
+            opacity: 0;
+            animation: fadeInUI 1.2s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+        }
+
+        @keyframes fadeInUI {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* تصميم الـ CD والتوهج */
+        .vinyl-wrapper {
+            position: relative;
+            width: 260px;
+            height: 260px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .vinyl-glow {
+            position: absolute;
+            width: 120%;
+            height: 120%;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(220, 20, 60, 0.6) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .playing .vinyl-glow {
+            opacity: 0.35;
+            animation: pulseGlow 4s infinite ease-in-out;
+        }
+
+        .vinyl-disk {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle, #0d0d0d 30%, #1a1a1a 40%, #050505 50%, #111111 60%, #000 70%);
+            position: relative;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: spin 12s linear infinite;
+            animation-play-state: paused;
+        }
+
+        .playing .vinyl-disk {
+            animation-play-state: running;
+        }
+
+        .album-art {
+            width: 56%;
+            height: 56%;
+            border-radius: 50%;
+            background-image: url('album-art.jpg');
+            background-size: cover;
+            background-position: center;
+            background-color: #222; /* خلفية بديلة في حال عدم وجود الصورة */
+            border: 3px solid #000;
+        }
+
+        .vinyl-center {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #010002;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+
+        /* النصوص والتحكم */
+        .info-controls {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .song-title {
+            font-family: 'Amiri', serif;
+            font-size: 38px;
+            margin: 0 0 5px 0;
+            color: #fff;
+            text-shadow: 0 0 15px rgba(220, 20, 60, 0.4);
+        }
+
+        .artist-name {
+            font-size: 15px;
+            color: #d1b3ff;
+            margin: 0 0 35px 0;
+            letter-spacing: 1px;
+            font-weight: 300;
+        }
+
+        /* شريط التقدم */
+        .progress-container {
+            width: 100%;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            cursor: pointer;
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #ff2e63, #ff6b6b);
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .time-stamps {
+            display: flex;
+            justify-content: space-between;
+            color: rgba(255,255,255,0.4);
+            font-size: 12px;
+            margin-top: -10px;
+            margin-bottom: 30px;
+            font-family: monospace;
+        }
+
+        .play-btn {
+            width: 75px;
+            height: 75px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.95);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 10px 25px rgba(220, 20, 60, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .play-btn:hover {
+            transform: scale(1.06);
+            background: #fff;
+            box-shadow: 0 15px 35px rgba(220, 20, 60, 0.4);
+        }
+
+        .play-btn svg {
+            width: 28px;
+            height: 28px;
+            fill: #05000a;
+        }
+
+        /* التوافق التام مع الشاشات والموبايل */
+        @media (max-width: 768px) {
+            .master-container {
+                flex-direction: column;
+                padding: 35px 20px;
+                text-align: center;
+                width: 88%;
+                gap: 25px;
+            }
+            .vinyl-wrapper {
+                width: 180px;
+                height: 180px;
+            }
+            .song-title { font-size: 28px; }
+            .play-btn { width: 65px; height: 65px; }
+            .info-controls { width: 100%; }
+            display: flex; justify-content: center;
+        }
+
+        @keyframes spin { 100% { transform: rotate(-360deg); } }
+        @keyframes pulseGlow { 0%, 100% { transform: scale(1); opacity: 0.3; } 50% { transform: scale(1.05); opacity: 0.5; } }
+    </style>
+</head>
+<body>
+
+    <canvas id="ultimate-canvas"></canvas>
+
+    <div class="master-container" id="player-card">
+        <div class="vinyl-wrapper">
+            <div class="vinyl-glow"></div>
+            <div class="vinyl-disk">
+                <div class="album-art"></div>
+                <div class="vinyl-center"></div>
+            </div>
+        </div>
+
+        <div class="info-controls">
+            <h1 class="song-title">على حسب وداد</h1>
+            <h2 class="artist-name">عبد الحليم حافظ</h2>
+            
+            <div class="progress-container" id="progress-box">
+                <div class="progress-bar" id="track-progress"></div>
+            </div>
+            <div class="time-stamps">
+                <span id="current-time">0:00</span>
+                <span id="duration-time">0:00</span>
+            </div>
+
+            <div class="controls-hub">
+                <button class="play-btn" id="play-trigger" aria-label="Play/Pause">
+                    <svg id="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <audio id="main-audio" src="music.mp3" preload="auto"></audio>
+
+    <script>
+        // --- إدارة مشغل الصوت ---
+        const audio = document.getElementById('main-audio');
+        const playBtn = document.getElementById('play-trigger');
+        const playIcon = document.getElementById('play-icon');
+        const playerCard = document.getElementById('player-card');
+        const progressBar = document.getElementById('track-progress');
+        const progressBox = document.getElementById('progress-box');
+        const currentTimeEl = document.getElementById('current-time');
+        const durationTimeEl = document.getElementById('duration-time');
+
+        const playPath = "M8 5v14l11-7z";
+        const pausePath = "M6 19h4V5H6v14zm8-14v14h4V5h-4z";
+
+        playBtn.addEventListener('click', () => {
+            if (audio.paused) {
+                audio.play().catch(e => console.log("تحتاج للتفاعل مع الصفحة أولاً"));
+                playIcon.innerHTML = `<path d="${pausePath}"/>`;
+                playerCard.classList.add('playing');
+            } else {
+                audio.pause();
+                playIcon.innerHTML = `<path d="${playPath}"/>`;
+                playerCard.classList.remove('playing');
+            }
+        });
+
+        audio.addEventListener('timeupdate', () => {
+            if(audio.duration) {
+                const percentage = (audio.currentTime / audio.duration) * 100;
+                progressBar.style.width = percentage + '%';
+                currentTimeEl.innerText = formatTime(audio.currentTime);
+            }
+        });
+
+        audio.addEventListener('loadedmetadata', () => {
+            durationTimeEl.innerText = formatTime(audio.duration);
+        });
+
+        progressBox.addEventListener('click', (e) => {
+            const rect = progressBox.getBoundingClientRect();
+            const clickPercent = (e.clientX - rect.left) / rect.width;
+            if(audio.duration) audio.currentTime = clickPercent * audio.duration;
+        });
+
+        function formatTime(seconds) {
+            let min = Math.floor(seconds / 60);
+            let sec = Math.floor(seconds % 60);
+            return min + ':' + (sec < 10 ? '0' : '') + sec;
+        }
+
+        // ---------------------------------------------------------------------
+        // --- محرك الـ Canvas والألوان والفيزياء المستقرة الخالية من الأخطاء ---
+        // ---------------------------------------------------------------------
+        const canvas = document.getElementById('ultimate-canvas');
+        const ctx = canvas.getContext('2d');
+
+        let width, height;
+        let cosmicElements = [];
+        let sproutingLilies = [];
+        let clickExplosions = [];
+
+        // تعريف ألوان الـ JS الصريحة لحل مشكلة الإيرور السابق
+        const jsColors = {
+            bgDeep: '#010002',
+            nebulaCrimson: 'rgba(65, 0, 15, 0.25)',
+            nebulaPurple: 'rgba(25, 0, 45, 0.35)',
+            starGlow: 'rgba(255, 255, 255, 0.8)'
+        };
+
+        function resizeCanvas() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            setupUniverse();
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        // التقاط التفاعلات والانفجارات
+        window.addEventListener('pointerdown', (e) => {
+            clickExplosions.push(new Explosion(e.clientX, e.clientY));
+        });
+
+        class CosmosElement {
+            constructor() { this.reset(); this.y = Math.random() * height; }
+            reset() {
+                this.x = Math.random() * width;
+                this.y = -30;
+                this.type = Math.random() > 0.35 ? 'star' : 'petal';
+                if (this.type === 'petal') {
+                    this.size = Math.random() * 5 + 4;
+                    this.speedY = Math.random() * 1.2 + 0.8;
+                    this.speedX = Math.random() * 1.6 - 0.8;
+                    this.angle = Math.random() * Math.PI * 2;
+                    this.spin = Math.random() * 0.03 - 0.015;
+                    this.color = `rgba(${190 + Math.floor(Math.random()*40)}, 15, 45, ${Math.random() * 0.5 + 0.4})`;
+                } else {
+                    this.size = Math.random() * 1.5 + 0.3;
+                    this.speedY = Math.random() * 0.2 + 0.05;
+                    this.speedX = 0;
+                    this.alpha = Math.random() * 0.7 + 0.3;
+                    this.twinkle = Math.random() * 0.015 + 0.005;
+                }
+                this.vx = 0; this.vy = 0;
+            }
+            update() {
+                // تأثير دفع الانفجار التفاعلي
+                for(let exp of clickExplosions){
+                    let dx = this.x - exp.x; let dy = this.y - exp.y;
+                    let dist = Math.sqrt(dx*dx + dy*dy);
+                    if(dist < exp.radius){
+                        let force = (exp.radius - dist) / exp.radius;
+                        this.vx += (dx/dist) * force * exp.force; this.vy += (dy/dist) * force * exp.force;
+                    }
+                }
+                this.vx *= 0.93; this.vy *= 0.93;
+                this.x += this.speedX + this.vx; this.y += this.speedY + this.vy;
+                
+                if (this.type === 'petal') this.angle += this.spin;
+                if (this.type === 'star') {
+                    this.alpha += this.twinkle;
+                    if(this.alpha > 0.9 || this.alpha < 0.2) this.twinkle = -this.twinkle;
+                }
+                if (this.y > height + 20 || this.x < -20 || this.x > width + 20) this.reset();
+            }
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                if (this.type === 'petal') {
+                    ctx.rotate(this.angle);
+                    ctx.fillStyle = this.color;
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = 'red';
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.quadraticCurveTo(this.size, -this.size, 0, this.size * 2.5);
+                    ctx.quadraticCurveTo(-this.size, -this.size, 0, 0);
+                    ctx.fill();
+                } else {
+                    ctx.fillStyle = `rgba(255,255,255,${this.alpha})`;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+            }
+        }
+
+        class SproutingLily {
+            constructor() { this.init(); this.y = height + Math.random() * 300; }
+            init() {
+                this.x = Math.random() * width;
+                this.y = height + 120;
+                this.speedY = Math.random() * 0.6 + 0.4;
+                this.scale = 0;
+                this.maxScale = Math.random() * 0.45 + 0.45;
+                this.growthSpeed = 0.0025;
+                this.life = 0;
+                this.maxLife = 600 + Math.random() * 200;
+                this.alpha = 0;
+                this.vx = 0;
+            }
+            update() {
+                for(let exp of clickExplosions){
+                    let dx = this.x - exp.x;
+                    let dist = Math.abs(dx);
+                    if(dist < exp.radius * 1.3 && Math.abs(this.y - exp.y) < 150){
+                        this.vx += (dx/dist) * (exp.force * 0.4);
+                    }
+                }
+                this.vx *= 0.94;
+                this.x += this.vx;
+                this.y -= this.speedY;
+
+                if (this.scale < this.maxScale) this.scale += this.growthSpeed;
+                this.alpha = Math.sin((this.life / this.maxLife) * Math.PI);
+                this.life++;
+
+                if (this.life > this.maxLife || this.y < -150) this.init();
+            }
+            draw() {
+                if (this.alpha <= 0) return;
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.scale(this.scale, this.scale);
+                ctx.globalAlpha = this.alpha;
+                ctx.fillStyle = '#dc143c';
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = 'rgba(220, 20, 60, 0.8)';
+                
+                // رسم بتلات زنبق العنكبوت بدقة انسيابية
+                for (let i = 0; i < 6; i++) {
+                    ctx.rotate(Math.PI / 3);
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.quadraticCurveTo(12, -50, 4, -100);
+                    ctx.quadraticCurveTo(-8, -50, 0, 0);
+                    ctx.fill();
+                    
+                    // السداة الرفيعة الممتدة للفضاء
+                    ctx.strokeStyle = 'rgba(255, 120, 120, 0.7)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(0, -30);
+                    ctx.quadraticCurveTo(18, -70, 8, -120);
+                    ctx.stroke();
+                }
+                ctx.restore();
+            }
+        }
+
+        class Explosion {
+            constructor(x, y) {
+                this.x = x; this.y = y;
+                this.radius = 10; this.maxRadius = 160;
+                this.alpha = 1; this.decay = 0.025; this.force = 12;
+            }
+            update() {
+                this.radius += (this.maxRadius - this.radius) * 0.12;
+                this.alpha -= this.decay;
+            }
+            draw() {
+                ctx.save();
+                ctx.globalCompositeOperation = 'lighter';
+                let grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius);
+                grad.addColorStop(0, `rgba(255, 60, 90, ${this.alpha * 0.6})`);
+                grad.addColorStop(1, 'transparent');
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        function setupUniverse() {
+            cosmicElements = [];
+            sproutingLilies = [];
+            const count = Math.min(window.innerWidth / 5, 200);
+            for (let i = 0; i < count; i++) cosmicElements.push(new CosmosElement());
+            for (let i = 0; i < 12; i++) sproutingLilies.push(new SproutingLily());
+        }
+
+        function drawNebulaSky() {
+            // تدرج الخلفية الأساسي
+            let baseGrad = ctx.createRadialGradient(width/2, height/2, 0, width/2, height/2, Math.max(width, height));
+            baseGrad.addColorStop(0, '#0a0212');
+            baseGrad.addColorStop(1, jsColors.bgDeep);
+            ctx.fillStyle = baseGrad;
+            ctx.fillRect(0, 0, width, height);
+
+            // سحب سديمية كهرومغناطيسية فاجرة
+            ctx.globalCompositeOperation = 'lighter';
+            ctx.fillStyle = jsColors.nebulaCrimson;
+            ctx.beginPath(); ctx.arc(width * 0.2, height * 0.3, width * 0.35, 0, Math.PI * 2); ctx.fill();
+            
+            ctx.fillStyle = jsColors.nebulaPurple;
+            ctx.beginPath(); ctx.arc(width * 0.75, height * 0.65, width * 0.4, 0, Math.PI * 2); ctx.fill();
+            ctx.globalCompositeOperation = 'source-over';
+        }
+
+        function mainLoop() {
+            ctx.fillStyle = 'rgba(1, 0, 2, 0.28)';
+            ctx.fillRect(0, 0, width, height);
+
+            drawNebulaSky();
+
+            cosmicElements.forEach(el => { el.update(); el.draw(); });
+            sproutingLilies.forEach(lily => { lily.update(); lily.draw(); });
+
+            // تحديث الانفجارات بأمان بدون ضرب الـ Indexing للـ Array
+            for (let i = clickExplosions.length - 1; i >= 0; i--) {
+                clickExplosions[i].update();
+                clickExplosions[i].draw();
+                if (clickExplosions[i].alpha <= 0) {
+                    clickExplosions.splice(i, 1);
+                }
+            }
+
+            requestAnimationFrame(mainLoop);
+        }
+
+        // إقلاع المحرك الفاجر بنجاح واستقرار
+        resizeCanvas();
+        mainLoop();
+
+        // منع الحركات العشوائية للموبايل أثناء اللمس والتفاعل مع اللوحة
+        document.body.addEventListener('touchmove', (e) => { if(e.target.tagName !== 'BUTTON' && e.target.tagName !== 'SPAN') e.preventDefault(); }, { passive: false });
+    </script>
+</body>
+</html>
